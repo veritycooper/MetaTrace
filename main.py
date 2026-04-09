@@ -21,7 +21,7 @@ def main():
 
     # Validate that the file exists before continuing
     if not os.path.isfile(args.filepath):
-        print("Error: The specified file does not exist.")
+        print(f"Error: File '{args.filepath}' was not found.") # updated just after final phase 2 commit to be more dynamic 
         sys.exit(1)
 
     # Display structured runtime information
