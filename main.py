@@ -1,4 +1,6 @@
 import argparse  # Library used to handle command-line arguments
+import os        # Used to check if the file exists
+import sys       # Used for controlled program exit
 
 
 def main():
@@ -7,15 +9,20 @@ def main():
         description="MetaTrace - Digital Forensics Hashing and Metadata Tool"
     )
 
-    # Define a required positional argument for the target file path
+    # Define required positional argument for the target file path
     parser.add_argument(
         "filepath",
         type=str,
         help="Path to the file to analyse"
     )
 
-    # Parse the arguments provided by the user
+    # Parse user-provided arguments
     args = parser.parse_args()
+
+    # Validate that the file exists before continuing
+    if not os.path.isfile(args.filepath):
+        print("Error: The specified file does not exist.")
+        sys.exit(1)
 
     # Display structured runtime information
     print("MetaTrace Runtime Information")
@@ -24,6 +31,5 @@ def main():
 
 
 # Standard Python entry point check
-# Ensures main() runs only when the script is executed directly
 if __name__ == "__main__":
     main()
