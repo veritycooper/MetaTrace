@@ -1,285 +1,314 @@
 import os
 from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, QLabel, QFrame, QScrollArea
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton,
+    QListWidget, QListWidgetItem, QScrollArea
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QSize
 
-from ..components.sidebar import Sidebar
+
+# ---------------------------------------------------------
+# RESOLVE ICON PATH ROBUSTLY
+# ---------------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+ICON_PATH = os.path.join(BASE_DIR, "icons")
+
+
+def card_frame():
+    frame = QFrame()
+    frame.setStyleSheet("""
+        QFrame {
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 26px;
+            border: 1px solid rgba(237, 233, 254, 0.6);
+        }
+    """)
+    return frame
 
 
 class DashboardScreen(QWidget):
     def __init__(self, app_window=None, parent=None):
         super().__init__(parent)
-        self.app_window = app_window
+
+        self.setStyleSheet("background: transparent;")
+
+        # Safe fallbacks
+        self.go_dashboard = getattr(app_window, "go_dashboard", lambda: None)
+        self.go_evidence = getattr(app_window, "go_evidence", lambda: None)
+        self.go_analysis = getattr(app_window, "go_analysis", lambda: None)
+        self.go_timeline = getattr(app_window, "go_timeline", lambda: None)
+        self.go_reports = getattr(app_window, "go_reports", lambda: None)
+        self.go_logs = getattr(app_window, "go_logs", lambda: None)
+        self.go_new_case = getattr(app_window, "show_new_case", lambda: None)
+        self.go_load_case = getattr(app_window, "go_load_case", lambda: None)
+
         self.init_ui()
 
+    # ---------------------------------------------------------
+    # SIDEBAR BUTTON (gradient active highlight)
+    # ---------------------------------------------------------
+    def nav_button(self, text, icon_name, callback, active=False):
+        btn = QPushButton(text)
+        btn.setCursor(Qt.PointingHandCursor)
+
+        icon_file = os.path.join(ICON_PATH, icon_name + ".svg")
+        btn.setIcon(QIcon(icon_file))
+        btn.setIconSize(QSize(24, 24))
+
+        base = """
+            QPushButton {
+                text-align: left;
+                padding: 14px 16px;
+                border-radius: 12px;
+                font-size: 16px;
+                color: #4B5563;
+                background: transparent;
+            }
+            QPushButton:hover {
+                background-color: rgba(139, 92, 246, 0.10);
+            }
+        """
+
+        if active:
+            extra = """
+                QPushButton {
+                    background: qlineargradient(
+                        x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #8B5CF6,
+                        stop:1 #EC4899
+                    );
+                    color: white;
+                    font-weight: 600;
+                }
+            """
+        else:
+            extra = "QPushButton { font-weight: 400; }"
+
+        btn.setStyleSheet(extra + base)
+        btn.clicked.connect(callback)
+        return btn
+
+    # ---------------------------------------------------------
+    # MAIN UI
+    # ---------------------------------------------------------
     def init_ui(self):
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
         # ---------------------------------------------------------
-        # Window gradient background
+        # TOPBAR (whiter, softer)
         # ---------------------------------------------------------
-        self.setStyleSheet("""
-            QWidget {
-                background: qlineargradient(
-                    x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #FDF4FF,
-                    stop:1 #E9D5FF
-                );
+        topbar = QFrame()
+        topbar.setFixedHeight(72)
+        topbar.setStyleSheet("""
+            QFrame {
+                background-color: rgba(255, 255, 255, 0.94);
+                border-bottom: 1px solid rgba(237, 233, 254, 0.6);
             }
         """)
 
-        main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        topbar_layout = QHBoxLayout(topbar)
+        topbar_layout.setContentsMargins(28, 0, 28, 0)
+
+        title = QLabel("MetaTrace Dashboard")
+        title.setStyleSheet("font-size: 24px; font-weight: 600; color: #374151;")
+        topbar_layout.addWidget(title)
+        topbar_layout.addStretch()
+
+        root.addWidget(topbar)
 
         # ---------------------------------------------------------
-        # Sidebar (left) — bind to app_window if available so callbacks call the real navigation methods
+        # MAIN AREA (sidebar + content)
         # ---------------------------------------------------------
-        target = self.app_window if getattr(self, "app_window", None) is not None else self
-
-        callbacks = {
-            "dashboard": getattr(target, "go_dashboard", self.go_dashboard),
-            "evidence": getattr(target, "go_evidence", self.go_evidence),
-            "analysis": getattr(target, "go_analysis", self.go_analysis),
-            "timeline": getattr(target, "go_timeline", self.go_timeline),
-            "reports": getattr(target, "go_reports", self.go_reports),
-            "logs": getattr(target, "go_logs", self.go_logs),
-            "new_case": getattr(target, "go_new_case", self.go_new_case),
-            "load_case": getattr(target, "go_load_case", self.go_load_case),
-        }
-
-        sidebar = Sidebar(navigate_callbacks=callbacks)
-        main_layout.addWidget(sidebar)
+        main_area = QHBoxLayout()
+        main_area.setContentsMargins(0, 0, 0, 0)
+        main_area.setSpacing(0)
 
         # ---------------------------------------------------------
-        # Scrollable dashboard content (right)
+        # SIDEBAR (whiter, icons, gradient active)
         # ---------------------------------------------------------
+        sidebar = QFrame()
+        sidebar.setFixedWidth(250)
+        sidebar.setStyleSheet("""
+            QFrame {
+                background-color: rgba(255, 255, 255, 0.96);
+                border-right: 1px solid rgba(237, 233, 254, 0.6);
+            }
+        """)
+
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(24, 28, 24, 28)
+        sidebar_layout.setSpacing(18)
+
+        sidebar_layout.addWidget(
+            self.nav_button("Dashboard", "dashboard", self.go_dashboard, active=True)
+        )
+        sidebar_layout.addWidget(self.nav_button("Evidence", "evidence", self.go_evidence))
+        sidebar_layout.addWidget(self.nav_button("Analysis", "analysis", self.go_analysis))
+        sidebar_layout.addWidget(self.nav_button("Timeline", "timeline", self.go_timeline))
+        sidebar_layout.addWidget(self.nav_button("Reports", "report", self.go_reports))
+        sidebar_layout.addWidget(self.nav_button("Logs", "log", self.go_logs))
+
+        sidebar_layout.addSpacing(16)
+
+        sidebar_layout.addWidget(self.nav_button("New Case", "new", self.go_new_case))
+        sidebar_layout.addWidget(self.nav_button("Load Case", "open", self.go_load_case))
+
+        sidebar_layout.addStretch()
+        main_area.addWidget(sidebar)
+
+        # ---------------------------------------------------------
+        # CONTENT AREA (ONE COLUMN, BIGGER TEXT)
+        # ---------------------------------------------------------
+        content = QWidget()
+        content.setStyleSheet("background: transparent;")
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(48, 48, 48, 48)
+        content_layout.setSpacing(48)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+        scroll.viewport().setStyleSheet("background: transparent;")
 
-        content = QWidget()
-        scroll.setWidget(content)
-
-        content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(40, 40, 40, 40)
-        content_layout.setSpacing(30)
+        inner = QWidget()
+        inner.setStyleSheet("background: transparent;")
+        inner_layout = QVBoxLayout(inner)
+        inner_layout.setSpacing(48)
 
         # ---------------------------------------------------------
-        # Dashboard Cards
+        # CARD 1 — Latest Case Summary
         # ---------------------------------------------------------
-        content_layout.addWidget(self.latest_case_summary_card())
-        content_layout.addWidget(self.investigation_progress_card())
-        content_layout.addWidget(self.case_actions_card())
-        content_layout.addWidget(self.recent_activity_card())
+        summary = card_frame()
+        s_layout = QVBoxLayout(summary)
+        s_layout.setContentsMargins(40, 40, 40, 40)
+        s_layout.setSpacing(20)
 
-        content_layout.addStretch()
+        s_title = QLabel("Latest Case Summary")
+        s_title.setStyleSheet("font-size: 24px; font-weight: 600; color: #374151;")
+        s_layout.addWidget(s_title)
 
-        main_layout.addWidget(scroll)
+        for label, value in [
+            ("Case Name:", "Case-2026-042-Cyber-Incident"),
+            ("Evidence Files:", "127 files"),
+            ("Last Activity:", "2 hours ago"),
+            ("Case Status:", "Analysis in Progress"),
+        ]:
+            info = QLabel(f"{label} <b>{value}</b>")
+            info.setStyleSheet("font-size: 16px; color: #4B5563;")
+            s_layout.addWidget(info)
 
-    # ---------------------------------------------------------
-    # Card: Latest Case Summary
-    # ---------------------------------------------------------
-    def latest_case_summary_card(self):
-        card = QFrame()
-        card.setStyleSheet("""
-            QFrame {
-                background-color: rgba(255, 255, 255, 0.65);
-                border-radius: 16px;
-                border: 1px solid #E9D5FF;
-            }
-            QLabel {
-                color: #4B5563;
-                font-size: 14px;
-            }
-            QLabel.title {
-                font-size: 18px;
-                font-weight: 600;
-            }
-        """)
+        inner_layout.addWidget(summary)
 
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(10)
+        # ---------------------------------------------------------
+        # CARD 2 — Investigation Progress
+        # ---------------------------------------------------------
+        progress = card_frame()
+        p_layout = QVBoxLayout(progress)
+        p_layout.setContentsMargins(40, 40, 40, 40)
+        p_layout.setSpacing(20)
 
-        title = QLabel("Latest Case Summary")
-        title.setProperty("class", "title")
-        layout.addWidget(title)
+        p_title = QLabel("Investigation Progress")
+        p_title.setStyleSheet("font-size: 24px; font-weight: 600; color: #374151;")
+        p_layout.addWidget(p_title)
 
-        layout.addWidget(QLabel("Case Name: Case-2026-042-Cyber-Incident"))
-        layout.addWidget(QLabel("Evidence Files: 127 files"))
-        layout.addWidget(QLabel("Last Activity: 2 hours ago"))
-        layout.addWidget(QLabel("Case Status: Analysis in Progress"))
+        p_label = QLabel("Overall Completion: 68%")
+        p_label.setStyleSheet("font-size: 16px; color: #4B5563;")
+        p_layout.addWidget(p_label)
 
-        return card
-
-    # ---------------------------------------------------------
-    # Card: Investigation Progress
-    # ---------------------------------------------------------
-    def investigation_progress_card(self):
-        card = QFrame()
-        card.setStyleSheet("""
-            QFrame {
-                background-color: rgba(255, 255, 255, 0.65);
-                border-radius: 16px;
-                border: 1px solid #E9D5FF;
-            }
-            QLabel {
-                color: #4B5563;
-                font-size: 14px;
-            }
-            QLabel.title {
-                font-size: 18px;
-                font-weight: 600;
-            }
-        """)
-
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(10)
-
-        title = QLabel("Investigation Progress")
-        title.setProperty("class", "title")
-        layout.addWidget(title)
-
-        progress_label = QLabel("Overall Completion: 68%")
-        layout.addWidget(progress_label)
-
-        # Simple pastel progress bar
         bar_bg = QFrame()
-        bar_bg.setFixedHeight(12)
-        bar_bg.setStyleSheet("""
-            QFrame {
-                background-color: #F3E8FF;
-                border-radius: 6px;
-            }
-        """)
+        bar_bg.setFixedHeight(10)
+        bar_bg.setStyleSheet("background-color: #E5E7EB; border-radius: 5px;")
 
         bar_fill = QFrame(bar_bg)
-        bar_fill.setGeometry(0, 0, int(0.68 * 400), 12)
-        bar_fill.setStyleSheet("""
-            QFrame {
-                background-color: #C084FC;
-                border-radius: 6px;
-            }
-        """)
+        bar_fill.setGeometry(0, 0, int(0.68 * 300), 10)
+        bar_fill.setStyleSheet("background-color: #8B5CF6; border-radius: 5px;")
 
-        layout.addWidget(bar_bg)
+        p_layout.addWidget(bar_bg)
+        inner_layout.addWidget(progress)
 
-        return card
+        # ---------------------------------------------------------
+        # CARD 3 — Case Actions
+        # ---------------------------------------------------------
+        actions = card_frame()
+        a_layout = QVBoxLayout(actions)
+        a_layout.setContentsMargins(40, 40, 40, 40)
+        a_layout.setSpacing(24)
 
-    # ---------------------------------------------------------
-    # Card: Case Actions
-    # ---------------------------------------------------------
-    def case_actions_card(self):
-        card = QFrame()
-        card.setStyleSheet("""
-            QFrame {
-                background-color: rgba(255, 255, 255, 0.65);
-                border-radius: 16px;
-                border: 1px solid #E9D5FF;
-            }
-            QPushButton {
-                height: 42px;
-                border-radius: 10px;
-                font-size: 14px;
-                color: white;
-            }
-            QPushButton#primary {
-                background-color: qlineargradient(
-                    x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #F0ABFC,
-                    stop:1 #C084FC
-                );
-            }
-            QPushButton#secondary {
-                background-color: transparent;
-                border: 1px solid #C084FC;
-                color: #4B5563;
-            }
-            QLabel.title {
-                font-size: 18px;
-                font-weight: 600;
-                color: #4B5563;
-            }
-        """)
-
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(14)
-
-        title = QLabel("Case Actions")
-        title.setProperty("class", "title")
-        layout.addWidget(title)
-
-        from PyQt5.QtWidgets import QPushButton
+        a_title = QLabel("Case Actions")
+        a_title.setStyleSheet("font-size: 24px; font-weight: 600; color: #374151;")
+        a_layout.addWidget(a_title)
 
         btn_continue = QPushButton("Continue Current Case")
-        btn_continue.setObjectName("primary")
+        btn_continue.clicked.connect(self.go_analysis)
+        btn_continue.setStyleSheet("""
+            QPushButton {
+                padding: 14px 20px;
+                border-radius: 14px;
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #8B5CF6,
+                    stop:1 #EC4899
+                );
+                color: white;
+                font-size: 16px;
+            }
+            QPushButton:hover { opacity: 0.9; }
+        """)
+        a_layout.addWidget(btn_continue)
 
         btn_load = QPushButton("Load Case")
-        btn_load.setObjectName("secondary")
-
-        layout.addWidget(btn_continue)
-        layout.addWidget(btn_load)
-
-        return card
-
-    # ---------------------------------------------------------
-    # Card: Recent Activity
-    # ---------------------------------------------------------
-    def recent_activity_card(self):
-        card = QFrame()
-        card.setStyleSheet("""
-            QFrame {
-                background-color: rgba(255, 255, 255, 0.65);
-                border-radius: 16px;
-                border: 1px solid #E9D5FF;
+        btn_load.clicked.connect(self.go_load_case)
+        btn_load.setStyleSheet("""
+            QPushButton {
+                padding: 14px 20px;
+                border-radius: 14px;
+                background-color: #F3F4F6;
+                color: #374151;
+                font-size: 16px;
             }
-            QLabel {
-                color: #4B5563;
-                font-size: 14px;
+            QPushButton:hover { background-color: #E5E7EB; }
+        """)
+        a_layout.addWidget(btn_load)
+
+        inner_layout.addWidget(actions)
+
+        # ---------------------------------------------------------
+        # CARD 4 — Recent Activity
+        # ---------------------------------------------------------
+        activity = card_frame()
+        act_layout = QVBoxLayout(activity)
+        act_layout.setContentsMargins(40, 40, 40, 40)
+        act_layout.setSpacing(20)
+
+        act_title = QLabel("Recent Activity")
+        act_title.setStyleSheet("font-size: 24px; font-weight: 600; color: #374151;")
+        act_layout.addWidget(act_title)
+
+        act_list = QListWidget()
+        act_list.setStyleSheet("""
+            QListWidget {
+                background: transparent;
+                border: none;
             }
-            QLabel.title {
-                font-size: 18px;
-                font-weight: 600;
+            QListWidget::item {
+                background-color: #F5F3FF;
+                border-radius: 12px;
+                margin: 6px;
+                padding: 10px;
+                color: #374151;
+                font-size: 15px;
             }
         """)
+        act_list.addItem(QListWidgetItem("File added — laptop_image_2026.dd (2 hours ago)"))
+        act_layout.addWidget(act_list)
 
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(10)
+        inner_layout.addWidget(activity)
 
-        title = QLabel("Recent Activity")
-        title.setProperty("class", "title")
-        layout.addWidget(title)
+        scroll.setWidget(inner)
+        content_layout.addWidget(scroll)
 
-        events = [
-            ("File added — laptop_image_2026.dd", "2 hours ago"),
-            ("Hash generated — MD5 checksum completed", "3 hours ago"),
-            ("Analysis started — Malware scan initiated", "4 hours ago"),
-            ("File added — network_logs_april.pcap", "5 hours ago"),
-        ]
-
-        for text, time in events:
-            row = QHBoxLayout()
-            row.addWidget(QLabel(text))
-            time_label = QLabel(time)
-            time_label.setAlignment(Qt.AlignRight)
-            row.addWidget(time_label)
-            layout.addLayout(row)
-
-        return card
-
-    # ---------------------------------------------------------
-    # Navigation stubs (fallbacks)
-    # ---------------------------------------------------------
-    def go_dashboard(self): pass
-    def go_evidence(self): pass
-    def go_analysis(self): pass
-    def go_timeline(self): pass
-    def go_reports(self): pass
-    def go_logs(self): pass
-    def go_new_case(self): pass
-    def go_load_case(self): pass
+        main_area.addWidget(content)
+        root.addLayout(main_area)

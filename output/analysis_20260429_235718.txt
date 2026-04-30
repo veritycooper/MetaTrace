@@ -1,0 +1,11 @@
+MetaTrace Forensic Analysis Report
+----------------------------------
+
+Analysis Timestamp: 2026-04-29 23:57:18.064750
+
+Target File: C:\Users\verit\Documents\MetaTrace\example.txt
+File Size (bytes): 0
+Created Time: 2026-04-09 19:04:54.749194
+Modified Time: 2026-04-09 19:04:54.749846
+Last Accessed Time: 2026-04-09 19:04:54.749846
+SHA-256 Hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855

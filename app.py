@@ -1,11 +1,10 @@
-# app.py — MetaTrace GUI entry point (starts on InitialScreen)
+# app.py — MetaTrace GUI entry point
 
 import sys
-import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPalette, QBrush, QLinearGradient, QColor
 
-# Import screens from the screens package
+# Screens
 from gui.screens.initial_screen import InitialScreen
 from gui.screens.new_case_screen import NewCaseScreen
 from gui.screens.dashboard_screen import DashboardScreen
@@ -16,36 +15,51 @@ class MetaTraceWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("MetaTrace")
-        self.setMinimumSize(1100, 700)
+        self.setMinimumSize(1200, 800)
 
-        # Central stacked widget (screen manager)
+        # ---------------------------------------------------------
+        # Global gradient background (matches Figma + New Case)
+        # ---------------------------------------------------------
+        palette = QPalette()
+        gradient = QLinearGradient(0, 0, 1, 1)
+        gradient.setCoordinateMode(QLinearGradient.ObjectBoundingMode)
+        gradient.setColorAt(0.0, QColor("#FDF2F8"))
+        gradient.setColorAt(0.5, QColor("#F5F3FF"))
+        gradient.setColorAt(1.0, QColor("#EFF6FF"))
+        palette.setBrush(QPalette.Window, QBrush(gradient))
+        self.setAutoFillBackground(True)
+        self.setPalette(palette)
+
+        # ---------------------------------------------------------
+        # Screen manager
+        # ---------------------------------------------------------
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
-        # Create screens but do not assume constructor signatures beyond app_window compatibility
-        # Pass app_window so screens can derive callbacks if they accept app_window
-        self.initial_screen = InitialScreen(navigate_new_case=self.show_new_case,
-                                            navigate_open_case=self.show_load_case,
-                                            parent=self)
-        self.new_case_screen = NewCaseScreen(app_window=self)  # NewCaseScreen is backwards-compatible
+        # Screens
+        self.initial_screen = InitialScreen(
+            navigate_new_case=self.show_new_case,
+            navigate_open_case=self.show_load_case,
+            parent=self
+        )
+
+        self.new_case_screen = NewCaseScreen(app_window=self)
         self.dashboard_screen = DashboardScreen(app_window=self)
 
-        # Add screens to stack in the order we want them to appear
-        self.stack.addWidget(self.initial_screen)   # index 0 — initial opening screen
+        # Add screens
+        self.stack.addWidget(self.initial_screen)   # index 0
         self.stack.addWidget(self.new_case_screen)  # index 1
         self.stack.addWidget(self.dashboard_screen) # index 2
 
-        # Start on InitialScreen (the opening screen)
+        # Start on InitialScreen
         self.stack.setCurrentWidget(self.initial_screen)
 
-        # Ensure NewCaseScreen can call back into the window
-        # If NewCaseScreen expects navigate_back/navigate_to_app names, it will derive them from app_window
-        # But also set explicit methods if needed:
+        # NewCaseScreen callbacks
         self.new_case_screen.navigate_back = self.show_initial
         self.new_case_screen.navigate_to_app = self.go_dashboard
 
     # ---------------------------------------------------------
-    # Screen switching helpers
+    # Navigation methods
     # ---------------------------------------------------------
     def show_initial(self):
         self.stack.setCurrentWidget(self.initial_screen)
@@ -54,13 +68,12 @@ class MetaTraceWindow(QMainWindow):
         self.stack.setCurrentWidget(self.new_case_screen)
 
     def show_load_case(self):
-        # placeholder for load case flow
-        print("Open case flow not implemented yet")
+        print("Load Case screen not implemented yet")
 
     def go_dashboard(self):
         self.stack.setCurrentWidget(self.dashboard_screen)
 
-    # Other placeholders for sidebar callbacks (dashboard_screen may call these)
+    # Sidebar callbacks
     def go_evidence(self):
         print("Evidence screen not built yet")
 
