@@ -14,9 +14,9 @@ def extract_metadata(filepath):
     metadata = {
         "absolute_path": os.path.abspath(filepath),
         "file_size_bytes": stats.st_size,
-        "created_time": datetime.fromtimestamp(stats.st_ctime),
-        "modified_time": datetime.fromtimestamp(stats.st_mtime),
-        "accessed_time": datetime.fromtimestamp(stats.st_atime),
+        "created_time": datetime.fromtimestamp(stats.st_ctime).isoformat(),
+        "modified_time": datetime.fromtimestamp(stats.st_mtime).isoformat(),
+        "accessed_time": datetime.fromtimestamp(stats.st_atime).isoformat(),
     }
 
     return metadata

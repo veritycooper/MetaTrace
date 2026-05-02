@@ -1,0 +1,75 @@
+[
+    {
+        "evidence_id": "EVID-0001",
+        "event_type": "Evidence Added",
+        "timestamp": "2026-05-01T14:37:58.413452",
+        "file_name": "test1.zip",
+        "sha256_hash": "8db70a1cb749dae7684e2236e7b8719b2b27dc1923e73a23caf7f2af4bf16415",
+        "hash_verified": true,
+        "entropy_score": 4.4231,
+        "entropy_classification": "Moderate (Compressed or mixed content)",
+        "malware_scan_result": "Scan completed. Review Defender logs.",
+        "disk_image_detected": false,
+        "memory_dump_detected": false,
+        "memory_analysis": {},
+        "recovered_files": [],
+        "metadata": {
+            "absolute_path": "C:\\Users\\verit\\Documents\\MetaTrace\\cases\\Case-Test\\evidence\\test1.zip",
+            "file_size_bytes": 218,
+            "created_time": "2026-05-01T14:37:58.373724",
+            "modified_time": "2026-05-01T14:15:16.305074",
+            "accessed_time": "2026-05-01T14:37:58.407997"
+        }
+    },
+    {
+        "evidence_id": "EVID-0002",
+        "event_type": "Evidence Added",
+        "timestamp": "2026-05-01T14:38:56.353165",
+        "file_name": "test1.txt",
+        "sha256_hash": "1a4fde39c92e25af512aec5c407f9c157419118c611bcdc997fa2748630bf064",
+        "hash_verified": true,
+        "entropy_score": 3.6947,
+        "entropy_classification": "Low (Likely plain text or structured data)",
+        "malware_scan_result": "Scan completed. Review Defender logs.",
+        "disk_image_detected": false,
+        "memory_dump_detected": false,
+        "memory_analysis": {},
+        "recovered_files": [],
+        "metadata": {
+            "absolute_path": "C:\\Users\\verit\\Documents\\MetaTrace\\cases\\Case-Test\\evidence\\test1.txt",
+            "file_size_bytes": 30,
+            "created_time": "2026-05-01T14:38:56.322784",
+            "modified_time": "2026-05-01T12:18:32.413293",
+            "accessed_time": "2026-05-01T14:38:56.348612"
+        }
+    },
+    {
+        "evidence_id": "EVID-0003",
+        "event_type": "Evidence Added",
+        "timestamp": "2026-05-02T08:41:24.257590",
+        "file_name": "suspicious.mem",
+        "sha256_hash": "dc115d5b47003b36780766a3e7dd548d10c4ebc1a3429e85962597dcebd7b815",
+        "hash_verified": true,
+        "entropy_score": 7.9625,
+        "entropy_classification": "High (Possible encryption, packing, or obfuscation)",
+        "malware_scan_result": "Scan completed. Review Defender logs.",
+        "disk_image_detected": false,
+        "memory_dump_detected": true,
+        "memory_analysis": {
+            "entropy_score": 7.9625,
+            "entropy_classification": "High",
+            "detected_processes": [],
+            "detected_ip_addresses": []
+        },
+        "recovered_files": [
+            "recovered_1.png"
+        ],
+        "metadata": {
+            "absolute_path": "C:\\Users\\verit\\Documents\\MetaTrace\\cases\\Case-Test\\evidence\\suspicious.mem",
+            "file_size_bytes": 114513,
+            "created_time": "2026-05-02T08:41:24.085870",
+            "modified_time": "2026-04-30T13:25:24.111358",
+            "accessed_time": "2026-05-02T08:41:24.252864"
+        }
+    }
+]

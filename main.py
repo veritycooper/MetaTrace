@@ -1,81 +1,94 @@
-import argparse  # Library used to handle command-line arguments
-import os        # Used to check if the file exists
-import sys       # Used for controlled program exit
+import argparse
+import os
+import sys
 
-from core.hashing import compute_sha256          # SHA-256 hashing function
-from core.metadata import extract_metadata      # Metadata extraction function
-from core.logger import save_analysis_report    # Text report generator
-from core.json_export import save_json_report   # JSON structured report generator
+from core.case_manager import create_case, add_evidence_to_case
+from core.report_generator import (
+    generate_executive_summary,
+    generate_technical_report,
+    generate_chain_of_custody,
+    generate_full_case_export
+)
 
 
+# -------------------------------------------------------------
+# Main CLI Function
+# -------------------------------------------------------------
 def main():
+    """
+    Entry point for MetaTrace forensic toolkit.
+    Handles:
+    - Case creation/loading
+    - Evidence processing
+    - Report generation
+    """
 
-    # --- CLI Argument Parser Setup ---
     parser = argparse.ArgumentParser(
-        description="MetaTrace - Digital Forensics Hashing and Metadata Tool"
+        description="MetaTrace Digital Forensics Toolkit"
     )
 
-    # --- Required Positional Argument (Target File Path) ---
+    parser.add_argument(
+        "case",
+        help="Name of the forensic case"
+    )
+
     parser.add_argument(
         "filepath",
-        type=str,
-        help="Path to the file to analyse"
+        help="Path to evidence file"
     )
 
-    # --- Optional Hash Verification Argument ---
-    parser.add_argument(
-        "--verify",
-        type=str,
-        help="Provide a known SHA-256 hash to verify file integrity"
-    )
-
-    # --- Parse User Arguments ---
     args = parser.parse_args()
 
-    # --- Validate File Exists Before Continuing ---
-    if not os.path.isfile(args.filepath):
-        print(f"Error: File '{args.filepath}' was not found.")
+    case_name = args.case
+    file_path = args.filepath
+
+    # ---------------------------------------------------------
+    # Validate Evidence File Exists
+    # ---------------------------------------------------------
+    if not os.path.exists(file_path):
+        print("Error: Evidence file not found.")
         sys.exit(1)
 
-    # --- Compute SHA-256 Hash ---
-    file_hash = compute_sha256(args.filepath)
+    case_path = os.path.join("cases", case_name)
 
-    # --- Extract File Metadata ---
-    file_metadata = extract_metadata(args.filepath)
+    # ---------------------------------------------------------
+    # Create or Load Case
+    # ---------------------------------------------------------
+    if not os.path.exists(case_path):
+        print(f"Creating new case: {case_name}")
+        create_case(case_name)
+    else:
+        print(f"Loading existing case: {case_name}")
 
-    # --- Generate Structured Text Report (.txt) ---
-    report_path = save_analysis_report(file_metadata, file_hash)
+    print("Adding evidence to case...")
 
-    # --- Generate Structured JSON Report (.json) ---
-    json_path = save_json_report(file_metadata, file_hash)
+    # ---------------------------------------------------------
+    # Add Evidence
+    # ---------------------------------------------------------
+    result = add_evidence_to_case(case_name, file_path)
 
-    # --- Display Runtime Information ---
-    print("\nMetaTrace Runtime Information")
-    print("--------------------------------")
+    if result is None:
+        print("Evidence was not added (duplicate detected).")
+        sys.exit(0)
 
-    print(f"Target File: {file_metadata['absolute_path']}")
-    print(f"File Size (bytes): {file_metadata['file_size_bytes']}")
-    print(f"Created Time: {file_metadata['created_time']}")
-    print(f"Modified Time: {file_metadata['modified_time']}")
-    print(f"Last Accessed Time: {file_metadata['accessed_time']}")
-    print(f"SHA-256 Hash: {file_hash}")
+    print("Evidence successfully processed.")
 
-    print(f"\nText report saved to: {report_path}")
-    print(f"JSON report saved to: {json_path}")
+    # ---------------------------------------------------------
+    # Generate Reports
+    # ---------------------------------------------------------
+    print("Generating reports...")
 
-    # --- Optional Hash Verification Logic ---
-    if args.verify:
+    generate_executive_summary(case_name)
+    generate_technical_report(case_name)
+    generate_chain_of_custody(case_name)
+    generate_full_case_export(case_name)
 
-        print("\nHash Verification Result")
-        print("------------------------")
-
-        # Compare lowercase to avoid case sensitivity issues
-        if file_hash.lower() == args.verify.lower():
-            print("Status: MATCH ✅ File integrity verified.")
-        else:
-            print("Status: MISMATCH ❌ File may have been altered.")
+    print("Reports generated successfully.")
+    print("Check case folder for recovered artefacts and reports.")
 
 
-# --- Standard Python Entry Point Check ---
+# -------------------------------------------------------------
+# Run Program
+# -------------------------------------------------------------
 if __name__ == "__main__":
     main()

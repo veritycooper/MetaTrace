@@ -1,0 +1,23 @@
+=== EXECUTIVE SUMMARY ===
+Case Name: Case-Test
+Date Generated: 2026-05-02T08:41:24.263289
+
+Total Evidence Items: 3
+
+- Evidence ID: EVID-0001
+  File: test1.zip
+  Hash Verified: True
+  Malware Result: Scan completed. Review Defender logs.
+
+- Evidence ID: EVID-0002
+  File: test1.txt
+  Hash Verified: True
+  Malware Result: Scan completed. Review Defender logs.
+
+- Evidence ID: EVID-0003
+  File: suspicious.mem
+  Hash Verified: True
+  Malware Result: Scan completed. Review Defender logs.
+  Entropy Score: 7.9625
+  Entropy Classification: High
+

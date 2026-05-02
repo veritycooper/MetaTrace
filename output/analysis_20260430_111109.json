@@ -1,0 +1,12 @@
+{
+    "analysis_timestamp": "2026-04-30 11:11:09.064127",
+    "target_file": "C:\\Users\\verit\\Documents\\MetaTrace\\example.txt",
+    "sha256_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metadata": {
+        "absolute_path": "C:\\Users\\verit\\Documents\\MetaTrace\\example.txt",
+        "file_size_bytes": 0,
+        "created_time": "2026-04-09 19:04:54.749194",
+        "modified_time": "2026-04-09 19:04:54.749846",
+        "accessed_time": "2026-04-09 19:04:54.749846"
+    }
+}

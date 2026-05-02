@@ -1,0 +1,21 @@
+=== CHAIN OF CUSTODY REPORT ===
+Case: Case-Test
+
+Evidence ID: EVID-0001
+File: test1.zip
+SHA-256: 8db70a1cb749dae7684e2236e7b8719b2b27dc1923e73a23caf7f2af4bf16415
+Added: 2026-05-01T14:37:58.413452
+Integrity Verified: True
+
+Evidence ID: EVID-0002
+File: test1.txt
+SHA-256: 1a4fde39c92e25af512aec5c407f9c157419118c611bcdc997fa2748630bf064
+Added: 2026-05-01T14:38:56.353165
+Integrity Verified: True
+
+Evidence ID: EVID-0003
+File: suspicious.mem
+SHA-256: dc115d5b47003b36780766a3e7dd548d10c4ebc1a3429e85962597dcebd7b815
+Added: 2026-05-02T08:41:24.257590
+Integrity Verified: True
+
